@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>あらすじ一覧</title>
+    <style>
+        body { font-family: sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; line-height: 1.6; }
+        h1 { border-bottom: 2px solid #333; padding-bottom: 10px; }
+        h2 { background-color: #f0f0f0; padding: 10px; border-left: 5px solid #007bff; margin-top: 30px; }
+        .toc { background-color: #f9f9f9; padding: 15px; border: 1px solid #ddd; margin-bottom: 30px; }
+        .toc ul { list-style-type: none; padding-left: 0; }
+        .toc li { margin-bottom: 5px; }
+        .toc a { text-decoration: none; color: #007bff; }
+        .toc a:hover { text-decoration: underline; }
+        .entry { margin-bottom: 40px; }
+        .summary { margin-top: 10px; white-space: pre-wrap; } /* 改行を維持 */
+        .back-to-toc { font-size: 0.8em; text-align: right; margin-top: 10px; }
+        .back-to-toc a { color: #999; text-decoration: none; }
+        #error-message { color: red; font-weight: bold; display: none; }
+    </style>
+</head>
+<body>
+
+    <h1>あらすじ一覧</h1>
+    
+    <div id="error-message">
+        データの読み込みに失敗しました。<br>
+        ローカルサーバー経由で開いているか確認してください。<br>
+        例: python -m http.server
+    </div>
+
+    <div class="toc" id="toc-container">
+        <h2>目次</h2>
+        <ul id="toc-list">
+            </ul>
+    </div>
+
+    <hr>
+
+    <div id="content-container">
+        </div>
+
+    <script>
+        // JSONLファイルのパス
+        const jsonlFile = 'n2267be_summaries.jsonl';
+
+        // データの取得と描画
+        async function loadAndRenderData() {
+            try {
+                const response = await fetch(jsonlFile);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const text = await response.text();
+                
+                // JSONLは1行ずつパースする必要がある
+                const lines = text.trim().split('\n');
+                const data = lines
+                    .filter(line => line.trim() !== '') // 空行を除外
+                    .map(line => {
+                        try {
+                            return JSON.parse(line);
+                        } catch (e) {
+                            console.error('JSON parse error:', e);
+                            return null;
+                        }
+                    })
+                    .filter(item => item !== null); // パース失敗を除外
+
+                render(data);
+
+            } catch (error) {
+                console.error('Fetch error:', error);
+                document.getElementById('error-message').style.display = 'block';
+                document.getElementById('error-message').innerText += `\n詳細: ${error.message}`;
+            }
+        }
+
+        // HTMLへの描画処理
+        function render(dataList) {
+            const tocList = document.getElementById('toc-list');
+            const contentContainer = document.getElementById('content-container');
+
+            dataList.forEach(entry => {
+                const id = entry.id;
+                const label = entry.label || '';
+                const title = entry.title || '';
+                const summary = entry.summary || 'あらすじなし';
+                const displayTitle = `${label} ${title}`.trim();
+
+                // 目次の追加
+                const li = document.createElement('li');
+                const a = document.createElement('a');
+                a.href = `#entry-${id}`;
+                a.textContent = displayTitle;
+                li.appendChild(a);
+                tocList.appendChild(li);
+
+                // 本文の追加
+                const entryDiv = document.createElement('div');
+                entryDiv.className = 'entry';
+                entryDiv.id = `entry-${id}`;
+
+                entryDiv.innerHTML = `
+                    <h2>${displayTitle}</h2>
+                    <div class="summary">
+                        <p>${summary}</p>
+                    </div>
+                    <div class="back-to-toc">
+                        <a href="#toc-container">↑ 目次に戻る</a>
+                    </div>
+                `;
+                contentContainer.appendChild(entryDiv);
+            });
+        }
+
+        // 実行
+        loadAndRenderData();
+    </script>
+
+</body>
+</html>
