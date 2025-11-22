@@ -3,31 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>あらすじ一覧</title>
+    <title>あらすじ一覧（高速版）</title>
     <style>
         body { font-family: sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; line-height: 1.6; }
         h1 { border-bottom: 2px solid #333; padding-bottom: 10px; }
         h2 { background-color: #f0f0f0; padding: 10px; border-left: 5px solid #007bff; margin-top: 30px; }
-        .toc { background-color: #f9f9f9; padding: 15px; border: 1px solid #ddd; margin-bottom: 30px; }
+        
+        /* 目次のスタイル */
+        .toc { background-color: #f9f9f9; padding: 15px; border: 1px solid #ddd; margin-bottom: 30px; max-height: 300px; overflow-y: auto; }
         .toc ul { list-style-type: none; padding-left: 0; }
         .toc li { margin-bottom: 5px; }
-        .toc a { text-decoration: none; color: #007bff; }
+        .toc a { text-decoration: none; color: #007bff; font-size: 0.9em; }
         .toc a:hover { text-decoration: underline; }
-        .entry { margin-bottom: 40px; }
-        .summary { margin-top: 10px; white-space: pre-wrap; } /* 改行を維持 */
+
+        /* 高速化の肝：画面外のコンテンツの描画をスキップする設定 */
+        .entry { 
+            margin-bottom: 40px; 
+            content-visibility: auto; /* 画面外の描画計算を省略 */
+            contain-intrinsic-size: 1000px; /* 高さを仮定してスクロールバーのガタつきを防ぐ */
+        }
+        
+        .summary { margin-top: 10px; white-space: pre-wrap; }
         .back-to-toc { font-size: 0.8em; text-align: right; margin-top: 10px; }
         .back-to-toc a { color: #999; text-decoration: none; }
-        #error-message { color: red; font-weight: bold; display: none; }
+        
+        #loading-status { position: fixed; top: 10px; right: 10px; background: #333; color: #fff; padding: 5px 10px; border-radius: 4px; font-size: 0.8em; display: none; }
+        #error-message { color: red; font-weight: bold; display: none; margin-bottom: 20px; }
     </style>
 </head>
 <body>
 
+    <div id="loading-status">読み込み中...</div>
     <h1>あらすじ一覧</h1>
-    
+
     <div id="error-message">
         データの読み込みに失敗しました。<br>
-        ローカルサーバー経由で開いているか確認してください。<br>
-        例: python -m http.server
+        ローカルサーバー経由で開いているか確認してください。（例: python -m http.server）
     </div>
 
     <div class="toc" id="toc-container">
@@ -42,83 +53,120 @@
         </div>
 
     <script>
-        // JSONLファイルのパス
         const jsonlFile = 'n2267be_summaries.jsonl';
 
-        // データの取得と描画
-        async function loadAndRenderData() {
+        async function loadAndRenderStream() {
+            const statusEl = document.getElementById('loading-status');
+            const tocList = document.getElementById('toc-list');
+            const contentContainer = document.getElementById('content-container');
+            const errorMsg = document.getElementById('error-message');
+
+            statusEl.style.display = 'block';
+
             try {
                 const response = await fetch(jsonlFile);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+                // ストリームリーダーの作成
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder('utf-8');
                 
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                let buffer = '';
+                
+                // DOM更新の負荷を下げるため、DocumentFragmentを使ってまとめて追加する
+                let tocFragment = document.createDocumentFragment();
+                let contentFragment = document.createDocumentFragment();
+                let chunkCounter = 0;
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    
+                    if (value) {
+                        buffer += decoder.decode(value, { stream: true });
+                    }
+
+                    // 改行ごとにデータを処理
+                    const lines = buffer.split('\n');
+                    
+                    // 最後の要素は不完全な可能性があるのでバッファに戻す（読み込み完了時以外）
+                    buffer = done ? '' : lines.pop();
+
+                    for (const line of lines) {
+                        if (!line.trim()) continue;
+                        try {
+                            const entry = JSON.parse(line);
+                            createElements(entry, tocFragment, contentFragment);
+                            chunkCounter++;
+                        } catch (e) {
+                            console.warn('JSON parse error skipping line:', e);
+                        }
+                    }
+
+                    // ある程度溜まったら（または読み込み完了したら）画面に描画
+                    // 頻繁にDOMを操作すると重くなるため、50件ごと、または読み込み完了時に更新
+                    if (chunkCounter >= 50 || done) {
+                        tocList.appendChild(tocFragment);
+                        contentContainer.appendChild(contentFragment);
+                        
+                        // フラグメントをリセット
+                        tocFragment = document.createDocumentFragment();
+                        contentFragment = document.createDocumentFragment();
+                        chunkCounter = 0;
+                        
+                        // 描画更新のために少し待機（UIのフリーズ防止）
+                        await new Promise(resolve => setTimeout(resolve, 0));
+                    }
+
+                    if (done) break;
                 }
 
-                const text = await response.text();
-                
-                // JSONLは1行ずつパースする必要がある
-                const lines = text.trim().split('\n');
-                const data = lines
-                    .filter(line => line.trim() !== '') // 空行を除外
-                    .map(line => {
-                        try {
-                            return JSON.parse(line);
-                        } catch (e) {
-                            console.error('JSON parse error:', e);
-                            return null;
-                        }
-                    })
-                    .filter(item => item !== null); // パース失敗を除外
-
-                render(data);
+                statusEl.innerText = '完了';
+                setTimeout(() => statusEl.style.display = 'none', 2000);
 
             } catch (error) {
                 console.error('Fetch error:', error);
-                document.getElementById('error-message').style.display = 'block';
-                document.getElementById('error-message').innerText += `\n詳細: ${error.message}`;
+                statusEl.style.display = 'none';
+                errorMsg.style.display = 'block';
+                errorMsg.innerText += `\n詳細: ${error.message}`;
             }
         }
 
-        // HTMLへの描画処理
-        function render(dataList) {
-            const tocList = document.getElementById('toc-list');
-            const contentContainer = document.getElementById('content-container');
+        function createElements(entry, tocFrag, contentFrag) {
+            const id = entry.id;
+            const label = entry.label || '';
+            const title = entry.title || '';
+            const summary = entry.summary || 'あらすじなし';
+            const displayTitle = `${label} ${title}`.trim();
 
-            dataList.forEach(entry => {
-                const id = entry.id;
-                const label = entry.label || '';
-                const title = entry.title || '';
-                const summary = entry.summary || 'あらすじなし';
-                const displayTitle = `${label} ${title}`.trim();
+            // 目次アイテム作成
+            const li = document.createElement('li');
+            const a = document.createElement('a');
+            a.href = `#entry-${id}`;
+            a.textContent = displayTitle;
+            li.appendChild(a);
+            tocFrag.appendChild(li);
 
-                // 目次の追加
-                const li = document.createElement('li');
-                const a = document.createElement('a');
-                a.href = `#entry-${id}`;
-                a.textContent = displayTitle;
-                li.appendChild(a);
-                tocList.appendChild(li);
-
-                // 本文の追加
-                const entryDiv = document.createElement('div');
-                entryDiv.className = 'entry';
-                entryDiv.id = `entry-${id}`;
-
-                entryDiv.innerHTML = `
-                    <h2>${displayTitle}</h2>
-                    <div class="summary">
-                        <p>${summary}</p>
-                    </div>
-                    <div class="back-to-toc">
-                        <a href="#toc-container">↑ 目次に戻る</a>
-                    </div>
-                `;
-                contentContainer.appendChild(entryDiv);
-            });
+            // 本文アイテム作成
+            const entryDiv = document.createElement('div');
+            entryDiv.className = 'entry';
+            entryDiv.id = `entry-${id}`;
+            
+            // innerHTMLは遅い場合があるが、複雑な構造には便利。
+            // ここでは可読性重視で使用するが、DOM APIのみで構築するとさらに数ミリ秒速くなる可能性あり。
+            entryDiv.innerHTML = `
+                <h2>${displayTitle}</h2>
+                <div class="summary">
+                    <p>${summary}</p>
+                </div>
+                <div class="back-to-toc">
+                    <a href="#toc-container">↑ 目次に戻る</a>
+                </div>
+            `;
+            contentFrag.appendChild(entryDiv);
         }
 
         // 実行
-        loadAndRenderData();
+        loadAndRenderStream();
     </script>
 
 </body>
