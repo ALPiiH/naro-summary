@@ -6,27 +6,19 @@
     <title>あらすじ</title>
 
     <link rel="shortcut icon" href="images/favi_16.png" type="image/png">
-    <link rel="icon" type="image/png" href="images/favi_16.png" sizes="16x16">
-    <link rel="icon" type="image/png" href="images/favi_32.png" sizes="32x32">
-    <link rel="icon" type="image/png" href="images/favi_96.png" sizes="96x96">
-    <link rel="icon" type="image/png" href="images/favi_192.png" sizes="192x192">
-    <link rel="apple-touch-icon" sizes="180x180" href="images/favi_180.png">
-    <link rel="apple-touch-icon" sizes="57x57" href="images/favi_57.png">
-    <link rel="apple-touch-icon" sizes="60x60" href="images/favi_60.png">
-    <link rel="apple-touch-icon" sizes="72x72" href="images/favi_72.png">
-    <link rel="apple-touch-icon" sizes="76x76" href="images/favi_76.png">
-    <link rel="apple-touch-icon" sizes="114x114" href="images/favi_114.png">
-    <link rel="apple-touch-icon" sizes="120x120" href="images/favi_120.png">
-    <link rel="apple-touch-icon" sizes="144x144" href="images/favi_144.png">
-    <link rel="apple-touch-icon" sizes="152x152" href="images/favi_152.png">
-
+    
     <style>
+        /* ==========================================================================
+           1. 基本設定 (Variables & Base)
+           ========================================================================== */
         :root {
             --primary: #000000;
             --text: #111827;
             --text-light: #6b7280;
             --bg: #ffffff;
             --border: #e5e7eb;
+            --highlight-bg: #fde047; /* ハイライト用黄色 */
+            --highlight-text: #000000;
         }
 
         html {
@@ -43,26 +35,41 @@
             display: flex; flex-direction: column;
         }
 
-        /* --------------------------------------------------
-           ヘッダー・検索エリア
-        -------------------------------------------------- */
+        /* ==========================================================================
+           2. ヘッダー・検索エリア
+           ========================================================================== */
         header {
             position: sticky; top: 0; z-index: 1000;
             background: rgba(255, 255, 255, 0.95);
             border-bottom: 1px solid var(--border);
-            padding: 15px 40px;
+            padding: 10px 20px;
+            gap: 10px;
             display: flex; flex-wrap: wrap;
             justify-content: space-between; align-items: center;
-            gap: 20px; flex-shrink: 0;
+            flex-shrink: 0;
         }
 
-        h1 { margin: 0; font-size: 1.3rem; font-weight: 700; color: #000; letter-spacing: 0.05em; }
+        h1 { 
+            margin: 0; 
+            line-height: 0;
+            display: flex;
+            align-items: center;
+        }
 
+        h1 img {
+            height: 32px;
+            width: auto;
+            display: block;
+        }
+
+        /* 検索ボックス */
         .search-container { 
-            flex: 1; max-width: 600px; position: relative; margin: 0 20px; 
+            flex: 1; max-width: none; position: relative; margin: 0 15px; 
         }
         .search-container input {
-            width: 100%; padding: 8px 0;
+            width: 100%; 
+            padding: 8px 0;
+            padding-right: 30px; /* アイコン用余白 */
             border: none; border-bottom: 1px solid #ccc;
             font-size: 1rem; outline: none; background: transparent;
             box-sizing: border-box; transition: border-color 0.2s;
@@ -76,17 +83,17 @@
         .header-right { display: flex; align-items: center; white-space: nowrap; }
         #status-display { font-size: 0.9rem; color: var(--text-light); font-weight: 500; }
 
-        /* --------------------------------------------------
-           メインレイアウト
-        -------------------------------------------------- */
+        /* ==========================================================================
+           3. メインレイアウト
+           ========================================================================== */
         #main-container { 
             flex: 1; padding: 40px; max-width: 1000px; margin: 0 auto; width: 100%;
             box-sizing: border-box; 
         }
         
-        /* --------------------------------------------------
-           目次 (Table of Contents)
-        -------------------------------------------------- */
+        /* ==========================================================================
+           4. 目次 (Table of Contents)
+           ========================================================================== */
         .toc { 
             padding: 0 0 30px 0; 
             border-bottom: 2px solid var(--text);
@@ -98,12 +105,15 @@
             margin-bottom: 20px; font-weight: 700;
         }
 
+        /* チャプターグループ（アコーディオン） */
         .chapter-group { margin-bottom: 5px; }
         .chapter-summary {
             padding: 5px 0; cursor: pointer; font-weight: 600; color: var(--text);
             list-style: none; display: flex; align-items: center; transition: color 0.2s;
         }
         .chapter-summary:hover { color: var(--primary); }
+        
+        /* デフォルトのマーカーを消してカスタムアイコンを表示 */
         .chapter-summary::-webkit-details-marker { display: none; }
         .chapter-summary::before {
             content: "＋"; font-size: 0.8rem; margin-right: 10px; color: var(--text-light); font-weight: normal;
@@ -118,9 +128,9 @@
         }
         .chapter-list li a:hover { color: var(--primary); text-decoration: underline; }
 
-        /* --------------------------------------------------
-           記事エントリー
-        -------------------------------------------------- */
+        /* ==========================================================================
+           5. 記事エントリー (Entry Styles)
+           ========================================================================== */
         .entry {
             background: transparent; border: none; box-shadow: none; border-radius: 0; padding: 0;
             margin-bottom: 50px; border-bottom: 1px solid #eee; padding-bottom: 50px;
@@ -143,60 +153,54 @@
             font-size: 0.85rem; text-align: justify;
         }
 
-        /* --------------------------------------------------
-           エントリーフッター（ボタン・ナビゲーション）
-        -------------------------------------------------- */
+        /* ==========================================================================
+           6. ハイライトとメッセージ
+           ========================================================================== */
+        .highlight-text {
+            background-color: var(--highlight-bg);
+            color: var(--highlight-text);
+            font-weight: bold;
+            border-radius: 2px;
+            padding: 0 2px;
+        }
+
+        #no-result-message {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-light);
+            font-size: 1.1rem;
+            display: none;
+            background: #f9fafb;
+            border: 1px dashed #ccc;
+            margin-top: 20px;
+        }
+
+        /* ==========================================================================
+           7. エントリーフッター (Buttons & Links)
+           ========================================================================== */
         .entry-footer {
-            display: flex;
-            justify-content: space-between; /* 左にボタン、右に目次へ戻る */
-            align-items: center;
-            margin-top: 30px;
+            display: flex; justify-content: space-between; align-items: center; margin-top: 30px;
         }
 
         .read-btn {
-            display: inline-flex;       /* アイコンと文字を並べる */
-            align-items: center;        /* 上下中央揃え */
-            gap: 6px;                   /* 文字と矢印の間隔 */
-            
-            background: transparent;    /* 背景なし */
-            border: none;               /* 枠線なし */
-            padding: 0;                 /* 余白なし */
-            box-shadow: none;           /* 影なし */
-            
-            color: var(--text-light);   /* 文字色はグレー */
-            font-size: 0.9rem;
-            font-weight: 500;           /* 程よい太さ */
-            text-decoration: none;      /* 下線なし */
-            
-            transition: color 0.2s ease;
+            display: inline-flex; align-items: center; gap: 6px;
+            background: transparent; border: none; padding: 0; box-shadow: none;
+            color: var(--text-light); font-size: 0.9rem; font-weight: 500;
+            text-decoration: none; transition: color 0.2s ease;
         }
-        
-        /* 疑似要素で矢印を追加 */
         .read-btn::after {
-            content: "→";
-            font-family: sans-serif;
-            transition: transform 0.2s ease;
-            display: inline-block;
+            content: "→"; font-family: sans-serif; transition: transform 0.2s ease; display: inline-block;
         }
-
-        /* ホバー時の動き */
-        .read-btn:hover {
-            color: var(--primary);      /* ホバー時は黒色（--primary）に */
-            opacity: 1;                 /* 透明度リセット */
-            transform: none;            /* 本体の移動はなし */
-        }
-
-        .read-btn:hover::after {
-            transform: translateX(5px); /* 矢印だけ右に少し動く */
-        }
+        .read-btn:hover { color: var(--primary); opacity: 1; transform: none; }
+        .read-btn:hover::after { transform: translateX(5px); }
         
         .back-to-toc { text-align: right; font-size: 0.9rem; }
         .back-to-toc a { color: var(--text-light); text-decoration: none; border-bottom: 1px solid #ddd; padding-bottom: 2px; }
         .back-to-toc a:hover { color: var(--primary); border-color: var(--primary); }
 
-        /* --------------------------------------------------
-           ユーティリティ（無限スクロール・エラー表示）
-        -------------------------------------------------- */
+        /* ==========================================================================
+           8. ユーティリティ
+           ========================================================================== */
         #scroll-sentinel { height: 10px; width: 100%; }
         #error-message { color: #ef4444; display: none; padding: 20px; text-align: center; font-weight: bold; }
     </style>
@@ -204,7 +208,10 @@
 <body>
 
     <header>
-        <h1>あらすじ</h1>
+        <h1>
+            <img src="logo.svg" alt="あらすじ">
+        </h1>
+
         <div class="search-container">
             <input type="text" id="search-input" placeholder="検索" oninput="handleSearch()">
         </div>
@@ -218,30 +225,94 @@
     <div id="main-container">
         <div class="toc" id="toc-container">
             <h2>目次</h2>
-            <div id="toc-content">
-                </div>
+            <div id="toc-content"></div>
         </div>
+        
+        <div id="no-result-message">
+            検索条件に一致する記事が見つかりませんでした。<br>
+            <span style="font-size: 0.9rem; margin-top:10px; display:block;">キーワードを変えて再度お試しください。</span>
+        </div>
+
         <div id="content-wrapper"></div>
+        
         <div id="scroll-sentinel"></div>
     </div>
 
     <script>
-        // --- 設定値 ---
+        /* ==========================================================================
+           設定値 (Configuration)
+           ========================================================================== */
         const tocFile = 'toc_data.json'; 
-        const contentFile = 'n2267be_summaries_gemini-2.5-pro.jsonl'; // URLが含まれているJSONLファイル
+        const contentFile = 'n2267be_summaries_gemini-2.5-pro.jsonl'; 
         
-        // --- 状態管理変数 ---
-        let allEntries = [];      
-        let currentEntries = [];  
-        let loadedCount = 0;      
+        /* ==========================================================================
+           状態管理 (State Management)
+           ========================================================================== */
+        let allEntries = [];      // 全データ保持用
+        let currentEntries = [];  // 現在表示対象のデータ（フィルタ後含む）
+        let loadedCount = 0;      // 現在描画済みの件数
+        let currentSearchQuery = null; // 現在の検索クエリ（正規表現）
         
-        // --- 初期化処理 ---
+        /* ==========================================================================
+           初期化処理 (Initialization)
+           ========================================================================== */
         async function init() {
             await loadAndRenderToc();
             loadContentData();
         }
 
-        // --- 目次データの読み込みと描画 ---
+        /* ==========================================================================
+           ユーティリティ：検索・ハイライト (Utils)
+           ========================================================================== */
+        
+        /**
+         * 検索用正規表現生成（ひらがな・カタカナのあいまい検索対応）
+         */
+        function createFuzzyRegex(query) {
+            if (!query) return null;
+
+            // 正規表現特殊文字のエスケープ
+            const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            
+            // ひらがな・カタカナの変換マップ作成
+            let pattern = '';
+            for (const char of escaped) {
+                // ひらがな範囲: \u3041-\u3096 -> カタカナへ変換
+                if (char.match(/[\u3041-\u3096]/)) {
+                    const code = char.charCodeAt(0);
+                    const kata = String.fromCharCode(code + 0x60);
+                    pattern += `[${char}${kata}]`;
+                } 
+                // カタカナ範囲: \u30A1-\u30F6 -> ひらがなへ変換
+                else if (char.match(/[\u30A1-\u30F6]/)) {
+                    const code = char.charCodeAt(0);
+                    const hira = String.fromCharCode(code - 0x60);
+                    pattern += `[${hira}${char}]`;
+                } 
+                else {
+                    pattern += char;
+                }
+            }
+            // グローバル一致、大文字小文字区別なし
+            return new RegExp(pattern, 'gi');
+        }
+
+        /**
+         * テキストハイライト処理
+         */
+        function highlightText(text, regex) {
+            if (!regex || !text) return text;
+            // マッチした部分をspanタグで囲んで返す
+            return text.replace(regex, match => `<span class="highlight-text">${match}</span>`);
+        }
+
+        /* ==========================================================================
+           データ読み込み処理 (Data Loading)
+           ========================================================================== */
+        
+        /**
+         * 目次データの読み込みと描画
+         */
         async function loadAndRenderToc() {
             const tocContent = document.getElementById('toc-content');
             try {
@@ -257,7 +328,7 @@
                         <ul class="chapter-list">
                     `;
                     group.items.forEach(item => {
-                        html += `<li><a onclick="jumpToEntry(${item.id})">${item.disp}</a></li>`;
+                        html += `<li data-id="${item.id}"><a onclick="jumpToEntry(${item.id})">${item.disp}</a></li>`;
                     });
                     html += `</ul></details>`;
                 });
@@ -266,11 +337,13 @@
             } catch (e) {
                 console.warn(e);
                 document.getElementById('error-message').style.display = 'block';
-                document.getElementById('error-message').innerText = "目次データの読み込みに失敗しました。python generate_toc.py を実行してください。";
+                document.getElementById('error-message').innerText = "目次データの読み込みに失敗しました。";
             }
         }
 
-        // --- 本文データ（JSONL）の読み込み ---
+        /**
+         * 本文データ（JSONL）の読み込み
+         */
         async function loadContentData() {
             const statusEl = document.getElementById('status-display');
             statusEl.innerText = "本文読み込み中...";
@@ -286,8 +359,10 @@
                 while (true) {
                     const { done, value } = await reader.read();
                     if (value) buffer += decoder.decode(value, { stream: true });
+                    
+                    // 行ごとに分割して処理
                     const lines = buffer.split('\n');
-                    buffer = done ? '' : lines.pop();
+                    buffer = done ? '' : lines.pop(); // 最後の不完全な行はバッファに残す
 
                     for (const line of lines) {
                         if (!line.trim()) continue;
@@ -297,12 +372,13 @@
                     }
                     if (done) break;
                     
-                    // データがある程度溜まったら初回表示
+                    // ある程度データが溜まったら初期表示を行う（UX向上）
                     if (loadedCount === 0 && allEntries.length >= 20) {
                         resetDisplay(allEntries);
                     }
                 }
                 
+                // 読み込み完了後の最終描画
                 if (loadedCount === 0) resetDisplay(allEntries);
                 statusEl.innerText = `${allEntries.length}件`;
                 setupInfiniteScroll();
@@ -312,14 +388,33 @@
             }
         }
 
-        // --- 表示管理（リセットと追加読み込み） ---
-        function resetDisplay(entries) {
+        /* ==========================================================================
+           表示管理・レンダリング (Rendering)
+           ========================================================================== */
+        
+        /**
+         * 表示のリセット（検索時や初期化時）
+         */
+        function resetDisplay(entries, searchQueryRegex = null) {
             currentEntries = entries;
+            currentSearchQuery = searchQueryRegex;
             loadedCount = 0;
             document.getElementById('content-wrapper').innerHTML = '';
-            loadMoreEntries();
+            
+            const noResultMsg = document.getElementById('no-result-message');
+            
+            // 0件判定
+            if (entries.length === 0 && allEntries.length > 0) {
+                noResultMsg.style.display = 'block';
+            } else {
+                noResultMsg.style.display = 'none';
+                loadMoreEntries();
+            }
         }
 
+        /**
+         * エントリーの追加読み込み（無限スクロール用）
+         */
         function loadMoreEntries() {
             if (loadedCount >= currentEntries.length) return;
 
@@ -331,19 +426,25 @@
                 const div = document.createElement('div');
                 div.className = 'entry';
                 div.id = `entry-${entry.id}`;
-                const label = (entry.label || '').trim();
-                
-                // リンクボタンの生成ロジック
                 const url = entry.url;
                 const buttonHtml = url ? `<a href="${url}" target="_blank" rel="noopener noreferrer" class="read-btn">本文を読む</a>` : '';
 
+                // ハイライト処理用データの準備
+                const labelRaw = (entry.label || '').trim();
+                const titleRaw = entry.title || '無題';
+                const summaryRaw = entry.summary || '';
+
+                // 検索クエリがある場合はハイライト適用
+                const labelDisp = currentSearchQuery ? highlightText(labelRaw, currentSearchQuery) : labelRaw;
+                const titleDisp = currentSearchQuery ? highlightText(titleRaw, currentSearchQuery) : titleRaw;
+                const summaryDisp = currentSearchQuery ? highlightText(summaryRaw, currentSearchQuery) : summaryRaw;
+
                 div.innerHTML = `
                     <div class="entry-header">
-                        ${label ? `<span class="label-badge">${label}</span>` : ''}
-                        <h2>${entry.title || '無題'}</h2>
+                        ${labelDisp ? `<span class="label-badge">${labelDisp}</span>` : ''}
+                        <h2>${titleDisp}</h2>
                     </div>
-                    <div class="summary">${entry.summary || ''}</div>
-                    
+                    <div class="summary">${summaryDisp}</div>
                     <div class="entry-footer">
                         ${buttonHtml}
                         <div class="back-to-toc"><a href="#" onclick="scrollToTop(event)">↑ 目次へ</a></div>
@@ -356,23 +457,31 @@
             loadedCount += nextBatch.length;
         }
 
-        // --- 無限スクロール設定 ---
+        /**
+         * 無限スクロールのIntersectionObserver設定
+         */
         function setupInfiniteScroll() {
             const sentinel = document.getElementById('scroll-sentinel');
             const observer = new IntersectionObserver((entries) => {
                 if (entries[0].isIntersecting) {
                     loadMoreEntries();
                 }
-            }, { rootMargin: '200px' });
+            }, { rootMargin: '200px' }); // 画面下部200px手前で読み込み開始
             observer.observe(sentinel);
         }
 
-        // --- ナビゲーション / スクロール制御 ---
+        /* ==========================================================================
+           ナビゲーション機能 (Navigation)
+           ========================================================================== */
+        
+        /**
+         * 指定IDのエントリーへジャンプ
+         */
         function jumpToEntry(id) {
             const targetId = `entry-${id}`;
             let targetEl = document.getElementById(targetId);
 
-            // 要素がまだ描画されていない場合はロードする
+            // 要素がまだ描画されていない場合、そこまで読み込む
             if (!targetEl) {
                 const index = currentEntries.findIndex(e => e.id === id);
                 if (index !== -1) {
@@ -383,20 +492,16 @@
                 }
             }
 
-            // スクロール位置の調整
+            // スムーススクロールで移動（ヘッダー分オフセット）
             if (targetEl) {
                 const header = document.querySelector('header');
                 const headerHeight = header ? header.offsetHeight : 0;
                 const buffer = 20;
-
                 const elementRect = targetEl.getBoundingClientRect();
                 const absoluteElementTop = elementRect.top + window.scrollY;
                 const offsetPosition = absoluteElementTop - headerHeight - buffer;
 
-                window.scrollTo({
-                    top: offsetPosition,
-                    behavior: 'smooth'
-                });
+                window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
             }
         }
 
@@ -405,38 +510,101 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        // --- 検索機能 ---
+        /* ==========================================================================
+           検索機能 (Search Logic)
+           ========================================================================== */
         let searchTimeout;
+        
         function handleSearch() {
             clearTimeout(searchTimeout);
+            // 入力停止後300msで検索実行（デバウンス）
             searchTimeout = setTimeout(() => {
-                const query = document.getElementById('search-input').value.toLowerCase().trim();
-                const groups = document.querySelectorAll('.chapter-group');
+                const rawQuery = document.getElementById('search-input').value.trim();
                 
-                if (!query) {
-                    resetDisplay(allEntries);
-                    groups.forEach(g => g.open = false);
+                // 入力が空の場合は全件表示にリセット
+                if (!rawQuery) {
+                    resetDisplay(allEntries, null);
+                    resetTocDisplay(); 
                     document.getElementById('status-display').innerText = `${allEntries.length}件`;
                     return;
                 }
                 
-                if (allEntries.length === 0) {
-                    document.getElementById('status-display').innerText = "読み込み中...";
-                    return;
-                }
+                if (allEntries.length === 0) return;
 
+                // あいまい検索用正規表現の作成
+                const fuzzyRegex = createFuzzyRegex(rawQuery);
+
+                // フィルタリング実行 (label, title, summary 全て対象)
                 const filtered = allEntries.filter(entry => {
-                    const text = `${entry.label} ${entry.title} ${entry.summary}`.toLowerCase();
-                    return text.includes(query);
+                    // 結合して一括チェック（パフォーマンス向上）
+                    const text = `${entry.label || ''} ${entry.title || ''} ${entry.summary || ''}`;
+                    return text.match(fuzzyRegex);
                 });
 
-                resetDisplay(filtered);
+                // 結果表示
+                resetDisplay(filtered, fuzzyRegex);
+                filterTocDisplay(filtered); 
+                
                 document.getElementById('status-display').innerText = `${filtered.length}件 表示`;
-                groups.forEach(g => g.open = true);
 
             }, 300);
         }
 
+        /**
+         * 検索結果に応じて目次の表示を制御
+         */
+        function filterTocDisplay(filteredEntries) {
+            if (filteredEntries.length === 0) {
+                // 0件の場合は目次を全て隠す
+                const groups = document.querySelectorAll('.chapter-group');
+                groups.forEach(g => g.style.display = 'none');
+                return;
+            }
+
+            const visibleIds = new Set(filteredEntries.map(e => e.id));
+            const groups = document.querySelectorAll('.chapter-group');
+
+            groups.forEach(group => {
+                let hasVisibleChild = false;
+                const items = group.querySelectorAll('li');
+
+                items.forEach(item => {
+                    const itemId = parseInt(item.getAttribute('data-id'));
+                    if (visibleIds.has(itemId)) {
+                        item.style.display = ''; 
+                        hasVisibleChild = true;
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+
+                // 子要素が表示されている場合のみグループを表示＆展開
+                if (hasVisibleChild) {
+                    group.style.display = '';
+                    group.open = true;
+                } else {
+                    group.style.display = 'none';
+                    group.open = false;
+                }
+            });
+        }
+
+        /**
+         * 目次の表示状態をリセット
+         */
+        function resetTocDisplay() {
+            const groups = document.querySelectorAll('.chapter-group');
+            groups.forEach(group => {
+                group.style.display = '';
+                group.open = false; // デフォルトは閉じる
+                const items = group.querySelectorAll('li');
+                items.forEach(item => {
+                    item.style.display = '';
+                });
+            });
+        }
+
+        // アプリケーション開始
         init();
     </script>
 </body>
