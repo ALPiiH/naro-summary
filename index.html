@@ -4,15 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>あらすじ</title>
-    
-    <link rel="shortcut icon" href="images/favicon.ico">
 
+    <link rel="shortcut icon" href="images/favi_16.png" type="image/png">
     <link rel="icon" type="image/png" href="images/favi_16.png" sizes="16x16">
     <link rel="icon" type="image/png" href="images/favi_32.png" sizes="32x32">
     <link rel="icon" type="image/png" href="images/favi_96.png" sizes="96x96">
-
     <link rel="icon" type="image/png" href="images/favi_192.png" sizes="192x192">
-
+    <link rel="apple-touch-icon" sizes="180x180" href="images/favi_180.png">
     <link rel="apple-touch-icon" sizes="57x57" href="images/favi_57.png">
     <link rel="apple-touch-icon" sizes="60x60" href="images/favi_60.png">
     <link rel="apple-touch-icon" sizes="72x72" href="images/favi_72.png">
@@ -21,11 +19,10 @@
     <link rel="apple-touch-icon" sizes="120x120" href="images/favi_120.png">
     <link rel="apple-touch-icon" sizes="144x144" href="images/favi_144.png">
     <link rel="apple-touch-icon" sizes="152x152" href="images/favi_152.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="images/favi_180.png">
 
     <style>
         :root {
-            --primary: #2563eb;
+            --primary: #000000;
             --text: #111827;
             --text-light: #6b7280;
             --bg: #ffffff;
@@ -46,7 +43,9 @@
             display: flex; flex-direction: column;
         }
 
-        /* Header */
+        /* --------------------------------------------------
+           ヘッダー・検索エリア
+        -------------------------------------------------- */
         header {
             position: sticky; top: 0; z-index: 1000;
             background: rgba(255, 255, 255, 0.95);
@@ -77,13 +76,17 @@
         .header-right { display: flex; align-items: center; white-space: nowrap; }
         #status-display { font-size: 0.9rem; color: var(--text-light); font-weight: 500; }
 
-        /* Main Container */
+        /* --------------------------------------------------
+           メインレイアウト
+        -------------------------------------------------- */
         #main-container { 
             flex: 1; padding: 40px; max-width: 1000px; margin: 0 auto; width: 100%;
             box-sizing: border-box; 
         }
         
-        /* Table of Contents (TOC) */
+        /* --------------------------------------------------
+           目次 (Table of Contents)
+        -------------------------------------------------- */
         .toc { 
             padding: 0 0 30px 0; 
             border-bottom: 2px solid var(--text);
@@ -115,7 +118,9 @@
         }
         .chapter-list li a:hover { color: var(--primary); text-decoration: underline; }
 
-        /* Entries */
+        /* --------------------------------------------------
+           記事エントリー
+        -------------------------------------------------- */
         .entry {
             background: transparent; border: none; box-shadow: none; border-radius: 0; padding: 0;
             margin-bottom: 50px; border-bottom: 1px solid #eee; padding-bottom: 50px;
@@ -137,15 +142,62 @@
             white-space: pre-wrap; color: #333; line-height: 2.0; 
             font-size: 0.85rem; text-align: justify;
         }
+
+        /* --------------------------------------------------
+           エントリーフッター（ボタン・ナビゲーション）
+        -------------------------------------------------- */
+        .entry-footer {
+            display: flex;
+            justify-content: space-between; /* 左にボタン、右に目次へ戻る */
+            align-items: center;
+            margin-top: 30px;
+        }
+
+        .read-btn {
+            display: inline-flex;       /* アイコンと文字を並べる */
+            align-items: center;        /* 上下中央揃え */
+            gap: 6px;                   /* 文字と矢印の間隔 */
+            
+            background: transparent;    /* 背景なし */
+            border: none;               /* 枠線なし */
+            padding: 0;                 /* 余白なし */
+            box-shadow: none;           /* 影なし */
+            
+            color: var(--text-light);   /* 文字色はグレー */
+            font-size: 0.9rem;
+            font-weight: 500;           /* 程よい太さ */
+            text-decoration: none;      /* 下線なし */
+            
+            transition: color 0.2s ease;
+        }
         
-        .back-to-toc { text-align: right; font-size: 0.9rem; margin-top: 20px; }
+        /* 疑似要素で矢印を追加 */
+        .read-btn::after {
+            content: "→";
+            font-family: sans-serif;
+            transition: transform 0.2s ease;
+            display: inline-block;
+        }
+
+        /* ホバー時の動き */
+        .read-btn:hover {
+            color: var(--primary);      /* ホバー時は黒色（--primary）に */
+            opacity: 1;                 /* 透明度リセット */
+            transform: none;            /* 本体の移動はなし */
+        }
+
+        .read-btn:hover::after {
+            transform: translateX(5px); /* 矢印だけ右に少し動く */
+        }
+        
+        .back-to-toc { text-align: right; font-size: 0.9rem; }
         .back-to-toc a { color: var(--text-light); text-decoration: none; border-bottom: 1px solid #ddd; padding-bottom: 2px; }
         .back-to-toc a:hover { color: var(--primary); border-color: var(--primary); }
 
-        /* Infinite Scroll Sentinel */
+        /* --------------------------------------------------
+           ユーティリティ（無限スクロール・エラー表示）
+        -------------------------------------------------- */
         #scroll-sentinel { height: 10px; width: 100%; }
-        
-        /* Error Message */
         #error-message { color: #ef4444; display: none; padding: 20px; text-align: center; font-weight: bold; }
     </style>
 </head>
@@ -174,20 +226,22 @@
     </div>
 
     <script>
+        // --- 設定値 ---
         const tocFile = 'toc_data.json'; 
-        const contentFile = 'n2267be_summaries.jsonl';
+        const contentFile = 'n2267be_summaries_gemini-2.5-pro.jsonl'; // URLが含まれているJSONLファイル
         
+        // --- 状態管理変数 ---
         let allEntries = [];      
         let currentEntries = [];  
         let loadedCount = 0;      
         
-        // Initialize
+        // --- 初期化処理 ---
         async function init() {
             await loadAndRenderToc();
             loadContentData();
         }
 
-        // Load TOC
+        // --- 目次データの読み込みと描画 ---
         async function loadAndRenderToc() {
             const tocContent = document.getElementById('toc-content');
             try {
@@ -216,7 +270,7 @@
             }
         }
 
-        // Load Main Content
+        // --- 本文データ（JSONL）の読み込み ---
         async function loadContentData() {
             const statusEl = document.getElementById('status-display');
             statusEl.innerText = "本文読み込み中...";
@@ -243,6 +297,7 @@
                     }
                     if (done) break;
                     
+                    // データがある程度溜まったら初回表示
                     if (loadedCount === 0 && allEntries.length >= 20) {
                         resetDisplay(allEntries);
                     }
@@ -257,7 +312,7 @@
             }
         }
 
-        // Display Management
+        // --- 表示管理（リセットと追加読み込み） ---
         function resetDisplay(entries) {
             currentEntries = entries;
             loadedCount = 0;
@@ -278,13 +333,21 @@
                 div.id = `entry-${entry.id}`;
                 const label = (entry.label || '').trim();
                 
+                // リンクボタンの生成ロジック
+                const url = entry.url;
+                const buttonHtml = url ? `<a href="${url}" target="_blank" rel="noopener noreferrer" class="read-btn">本文を読む</a>` : '';
+
                 div.innerHTML = `
                     <div class="entry-header">
                         ${label ? `<span class="label-badge">${label}</span>` : ''}
                         <h2>${entry.title || '無題'}</h2>
                     </div>
                     <div class="summary">${entry.summary || ''}</div>
-                    <div class="back-to-toc"><a href="#" onclick="scrollToTop(event)">↑ 目次へ</a></div>
+                    
+                    <div class="entry-footer">
+                        ${buttonHtml}
+                        <div class="back-to-toc"><a href="#" onclick="scrollToTop(event)">↑ 目次へ</a></div>
+                    </div>
                 `;
                 fragment.appendChild(div);
             });
@@ -293,7 +356,7 @@
             loadedCount += nextBatch.length;
         }
 
-        // Infinite Scroll
+        // --- 無限スクロール設定 ---
         function setupInfiniteScroll() {
             const sentinel = document.getElementById('scroll-sentinel');
             const observer = new IntersectionObserver((entries) => {
@@ -304,11 +367,12 @@
             observer.observe(sentinel);
         }
 
-        // Navigation / Scroll Handling
+        // --- ナビゲーション / スクロール制御 ---
         function jumpToEntry(id) {
             const targetId = `entry-${id}`;
             let targetEl = document.getElementById(targetId);
 
+            // 要素がまだ描画されていない場合はロードする
             if (!targetEl) {
                 const index = currentEntries.findIndex(e => e.id === id);
                 if (index !== -1) {
@@ -319,6 +383,7 @@
                 }
             }
 
+            // スクロール位置の調整
             if (targetEl) {
                 const header = document.querySelector('header');
                 const headerHeight = header ? header.offsetHeight : 0;
@@ -340,7 +405,7 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        // Search Function
+        // --- 検索機能 ---
         let searchTimeout;
         function handleSearch() {
             clearTimeout(searchTimeout);

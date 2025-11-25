@@ -3,7 +3,7 @@ import re
 import os
 
 def generate_toc_json():
-    input_file = 'n2267be_summaries.jsonl'
+    input_file = 'n2267be_summaries_gemini-2.5-pro.jsonl'
     map_file = 'chapter_titles.json'
     output_file = 'toc_data.json'
 

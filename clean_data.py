@@ -1,9 +1,9 @@
 import json
 
 def clean_jsonl():
-    input_file = 'n2267be_summaries.jsonl'
+    input_file = 'n2267be_summaries_gemini-2.5-pro_include_text.jsonl'
     # 出力ファイル名（元ファイルを上書きしたい場合は同じ名前に変更してください）
-    output_file = 'n2267be_summaries_light.jsonl'
+    output_file = 'n2267be_summaries_gemini-2.5-pro.jsonl'
 
     print(f"処理を開始します: {input_file} -> {output_file}")
     
